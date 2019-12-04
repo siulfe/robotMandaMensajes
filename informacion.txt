@@ -1,0 +1,2 @@
+https://parzibyte.me/blog/2019/05/21/peticion-post-get-put-delete-go-net-http/
+https://medium.com/the-andela-way/build-a-restful-json-api-with-golang-85a83420c9da
