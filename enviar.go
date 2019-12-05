@@ -1,43 +1,72 @@
-package main
+package enviarMensajes
 
+import (
+    "math/rand"
+    "time"
+    "net/http"
+    "log"
+    "encoding/json"
+    "fmt"
+    "bytes"
+)
 
-func enviarMensaje() {
+type mensajes struct{
+    body string
+    title string
+}
+
+var enviandoPrimer bool
+
+func Enviar() {
     
     for {
 
-        if(id == ""){
+        time.Sleep(1 * time.Second)
+
+        if(id == "" || ip == ""){
             continue
         }
 
-
+        mensaje := obtenerMensaje()
         
+        body, _ := json.Marshal(mensaje)
+       
+        resp,err := http.Post(ip,"application/json",bytes.NewBuffer(body))
+
+        if err != nil{
+            continue
+        }
+
+        defer resp.Body.Close()
+
+        if !enviandoPrimer{
+            enviandoPrimer = true
+            log.Println("Enviando a la IP: ",ip,", con id: ",id, " Codigo de la respuesta: ", resp.StatusCode)
+        }
+
     }
-
-    var mensaje = obtenerMensaje()
-
-    connection.invoke("Message", { title: "Factura Postulada", body: "La factura nmr: 2244-12345678 ha sido postulada con exito" }, id)
 
 }    
 
-func obtenerMensaje() {
-    var mensaje = {
+func obtenerMensaje() mensajes{
+    mensaje := &mensajes{
         body: "",
-        title: ""
+        title: "",
     }
 
-    var param = Math.random() * 10
+    param := rand.Intn(10)
 
     mensaje.body = obtenerBody(param)
 
     mensaje.title = obtenerTitle(param)
 
-    return mensaje
+    return *mensaje
 }
 
 
-func obtenerBody(indice) {
+func obtenerBody(indice int) string{
 
-    switch (indice) {
+    switch indice{
         case 0: return "Se le ha mandado un mensaje al Email"
         case 1: return "Una transacción se ha realizado con exito, por parte de un miembro de la empresa"
         case 2: return "La factura número: "+obtenerNumeroFactura()+", ha sido rechazada."
@@ -50,11 +79,12 @@ func obtenerBody(indice) {
         case 9: return "Navidad"
     }
 
+    return "default"
 }
 
-func obtenerTitle(indice) {
+func obtenerTitle(indice int) string{
 
-    switch (indice) {
+    switch indice{
         case 0: return "Información del Sistema"
         case 1: return "Otros Usuarios"
         case 2: return "Información del Sistema"
@@ -66,9 +96,11 @@ func obtenerTitle(indice) {
         case 8: return "Mensajes del Sistema"
         case 9: return "Un Mensaje que dice Navidad"
     }
+
+    return "default"
 }
 
 
-func obtenerNumeroFactura() {
-    return (Math.random() * 9000) + 1000 + "-" + (Math.random() * 90000000) + 10000000 
+func obtenerNumeroFactura() string{
+    return fmt.Sprintf("%f.0",(rand.Float64() * 9000) + 1000) + "-" + fmt.Sprintf("%f.0",(rand.Float64() * 90000000) + 10000000) 
 }
