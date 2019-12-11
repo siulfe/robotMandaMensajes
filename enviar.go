@@ -18,22 +18,30 @@ type mensajes struct{
 var enviandoPrimer bool
 
 func Enviar() {
-    
+       
     for {
 
-        time.Sleep(1 * time.Second)
-
+        time.Sleep(2 * time.Second)
         if(id == "" || ip == ""){
             continue
         }
 
-        mensaje := obtenerMensaje()
-        
-        body, _ := json.Marshal(mensaje)
-       
-        resp,err := http.Post(ip,"application/json",bytes.NewBuffer(body))
+        msg := obtenerMensaje()
+
+        mensaje := map[string]string{"body": msg.body, "title": msg.title, "id":id}
+
+        buf := new(bytes.Buffer)
+        json.NewEncoder(buf).Encode(mensaje)
+
+        req,err := http.NewRequest("POST",ip,buf)
+
+        req.Header.Set("Content-Type", "application/json")
+ 
+        client := &http.Client{}
+        resp, err := client.Do(req)
 
         if err != nil{
+            log.Println("Error al enviar el httpPost: ",err)
             continue
         }
 
@@ -41,7 +49,7 @@ func Enviar() {
 
         if !enviandoPrimer{
             enviandoPrimer = true
-            log.Println("Enviando a la IP: ",ip,", con id: ",id, " Codigo de la respuesta: ", resp.StatusCode)
+            log.Println("Enviando a la IP: ",ip,", con id: ",id, " Codigo de la respuesta: ", resp.Status)
         }
 
     }
@@ -75,7 +83,7 @@ func obtenerBody(indice int) string{
         case 5: return "TuFactoring posee la mayor cantidad de tecnologias de ultima generación en le mercado"
         case 6: return "La factura número: " + obtenerNumeroFactura() + ", se encuentra actualmente en procesos de pago, le felicitamos por usar TuFactoring"
         case 7: return "Factura número: " + obtenerNumeroFactura() + ", Ha sido la factura con más ofertas en la historia de TuFactoring"
-        case 8: return "Factura n+umero: " + obtenerNumeroFactura() + ", fue la primera factura con un valor de más de un billon registrada en TuFactoring"
+        case 8: return "Factura número: " + obtenerNumeroFactura() + ", fue la primera factura con un valor de más de un billon registrada en TuFactoring"
         case 9: return "Navidad"
     }
 
@@ -102,5 +110,5 @@ func obtenerTitle(indice int) string{
 
 
 func obtenerNumeroFactura() string{
-    return fmt.Sprintf("%f.0",(rand.Float64() * 9000) + 1000) + "-" + fmt.Sprintf("%f.0",(rand.Float64() * 90000000) + 10000000) 
+    return fmt.Sprintf("%.0f",(rand.Float64() * 9000) + 1000) + "-" + fmt.Sprintf("%.0f",(rand.Float64() * 90000000) + 10000000) 
 }
